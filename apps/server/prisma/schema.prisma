@@ -1,0 +1,103 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id               String               @id @default(cuid())
+  name             String
+  email            String               @unique
+  passwordHash     String
+  phone            String?
+  pixKey           String?
+  createdAt        DateTime             @default(now())
+  updatedAt        DateTime             @updatedAt
+  ownedExpenses    Expense[]            @relation("ExpenseOwner")
+  participations   ExpenseParticipant[]
+  requestedFriends Friendship[]         @relation("FriendshipRequester")
+  receivedFriends  Friendship[]         @relation("FriendshipAddressee")
+}
+
+model Friendship {
+  id          String           @id @default(cuid())
+  requesterId String
+  addresseeId String
+  status      String   @default("PENDING")
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  requester   User             @relation("FriendshipRequester", fields: [requesterId], references: [id], onDelete: Cascade)
+  addressee   User             @relation("FriendshipAddressee", fields: [addresseeId], references: [id], onDelete: Cascade)
+
+  @@unique([requesterId, addresseeId])
+  @@index([addresseeId, status])
+  @@index([requesterId, status])
+}
+
+model Expense {
+  id                  String               @id @default(cuid())
+  ownerId             String
+  title               String
+  description         String?
+  originalAmountCents Int
+  participantCount    Int
+  status              String               @default("OPEN")
+  dueDate             DateTime?
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+  owner               User                 @relation("ExpenseOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  document            ExpenseDocument?
+  participants        ExpenseParticipant[]
+
+  @@index([ownerId, status])
+}
+
+model ExpenseDocument {
+  id                   String            @id @default(cuid())
+  expenseId            String            @unique
+  imageUrl             String
+  ocrStatus            String   @default("PENDING")
+  extractedAmountCents Int?
+  extractedText        String?
+  confidence           Float?
+  createdAt            DateTime          @default(now())
+  updatedAt            DateTime          @updatedAt
+  expense              Expense           @relation(fields: [expenseId], references: [id], onDelete: Cascade)
+}
+
+model ExpenseParticipant {
+  id          String            @id @default(cuid())
+  expenseId   String
+  userId      String
+  amountCents Int
+  status      String   @default("PENDING")
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+  expense     Expense           @relation(fields: [expenseId], references: [id], onDelete: Cascade)
+  user        User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  pixPayments PixPayment[]
+
+  @@unique([expenseId, userId])
+  @@index([userId, status])
+}
+
+model PixPayment {
+  id                   String             @id @default(cuid())
+  expenseParticipantId String
+  provider             String
+  providerPaymentId    String?
+  amountCents          Int
+  pixCode              String
+  qrCodeUrl            String?
+  expiresAt            DateTime?
+  status               String             @default("CREATED")
+  paidAt               DateTime?
+  createdAt            DateTime           @default(now())
+  updatedAt            DateTime           @updatedAt
+  expenseParticipant   ExpenseParticipant @relation(fields: [expenseParticipantId], references: [id], onDelete: Cascade)
+
+  @@index([expenseParticipantId, status])
+}

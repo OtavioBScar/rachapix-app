@@ -1,0 +1,16 @@
+{
+  "name": "rachapix-app",
+  "version": "0.1.0",
+  "private": true,
+  "workspaces": [
+    "apps/*"
+  ],
+  "scripts": {
+    "dev:server": "npm run dev -w @rachapix/server",
+    "build:server": "npm run build -w @rachapix/server",
+    "start:server": "npm run start -w @rachapix/server"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
