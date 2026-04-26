@@ -8,7 +8,12 @@
   "scripts": {
     "dev:server": "npm run dev -w @rachapix/server",
     "build:server": "npm run build -w @rachapix/server",
-    "start:server": "npm run start -w @rachapix/server"
+    "start:server": "npm run start -w @rachapix/server",
+    "dev:mobile": "npm run start -w @rachapix/mobile",
+    "android:mobile": "npm run android -w @rachapix/mobile",
+    "dev:mobile:offline": "npm run start:offline -w @rachapix/mobile",
+    "android:mobile:offline": "npm run android:offline -w @rachapix/mobile",
+    "typecheck:mobile": "npm run typecheck -w @rachapix/mobile"
   },
   "engines": {
     "node": ">=20"
